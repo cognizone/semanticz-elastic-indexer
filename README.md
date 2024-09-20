@@ -48,14 +48,6 @@ To build the project from source:
 
 The build artifacts will be stored in the `build/libs` directory.
 
-## Usage
-
-Here’s how you can use the library to convert RDF data using SHACL:
-
-```java
-
-```
-
 ## Running Tests
 
 Run unit tests using Gradle:
