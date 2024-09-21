@@ -48,6 +48,57 @@ To build the project from source:
 
 The build artifacts will be stored in the `build/libs` directory.
 
+## Usage
+
+To index RDF data into Elasticsearch using the `rdf2jsonld` and `elastic-indexer` libraries, add the following dependencies to your project:
+
+### Gradle
+
+```gradle
+implementation "zone.cogni.semanticz:rdf2jsonld:{rdf2jsonld.version}"
+implementation "zone.cogni.semanticz:elastic-indexer:{rdf2jsonld.version}"
+```
+
+### Maven
+
+```xml
+<dependency>
+  <groupId>zone.cogni.semanticz</groupId>
+  <artifactId>rdf2jsonld</artifactId>
+  <version>{rdf2jsonld.version}</version>
+</dependency>
+<dependency>
+  <groupId>zone.cogni.semanticz</groupId>
+  <artifactId>elastic-indexer</artifactId>
+  <version>{rdf2jsonld.version}</version>
+</dependency>
+```
+
+### Indexing a Document Using a SHACL Model
+
+Here's how you can index a single RDF document into Elasticsearch using a SHACL model for transformation:
+
+```java
+public void indexOne(String uri, Model data, Model shaclModel) {
+    // Convert the RDF data to JSON-LD using the SHACL model
+    String jsonLd = JsonLdUtils.modelToJsonLd(data, shaclModel, jsonLdWriter);
+
+    // Index the JSON-LD document into Elasticsearch
+    IndexingUtils.simpleIndexOne(elasticsearchClient, "index-name", uri, jsonLd);
+}
+```
+
+In this example:
+
+- `uri` is the unique identifier for the document.
+- `data` is the RDF `Model` containing your data.
+- `shaclModel` is the SHACL `Model` used to guide the transformation during the conversion to JSON-LD.
+- `jsonLdWriter` is an instance of `JsonLdWriter` configured according to your needs.
+- `elasticsearchClient` is your Elasticsearch client instance.
+- `"index-name"` is the name of the Elasticsearch index where the document will be stored.
+- `JsonLdUtils.modelToJsonLd()` converts the RDF `Model` to a JSON-LD string using the SHACL model.
+- `IndexingUtils.simpleIndexOne()` indexes the JSON-LD document into Elasticsearch.
+
 ## Running Tests
 
 Run unit tests using Gradle:
