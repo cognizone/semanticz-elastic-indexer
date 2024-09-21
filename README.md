@@ -1,6 +1,6 @@
-# Elastic Indexer
+# SemantiCZ Elastic Indexer
 
-The 'elastic-indexer' is a Java-based tool that helps in indexing and searching documents in an Elasticsearch cluster using simple and bulk methods.
+The 'semanticz-elastic-indexer' is a Java-based tool that helps in indexing and searching documents in an Elasticsearch cluster using simple and bulk methods.
 
 ## Prerequisites
 
@@ -11,13 +11,13 @@ The 'elastic-indexer' is a Java-based tool that helps in indexing and searching 
 
 ### From Maven Central
 
-To include `elastic-indexer` in your project, add the following dependency:
+To include `semanticz-elastic-indexer` in your project, add the following dependency:
 
 #### For Gradle users:
 
 ```gradle
 dependencies {
-    implementation 'zone.cogni.semanticz:elastic-indexer:1.0.0'
+    implementation 'zone.cogni.semanticz:semanticz-elastic-indexer:1.0.0'
 }
 ```
 
@@ -26,7 +26,7 @@ dependencies {
 ```xml
 <dependency>
     <groupId>zone.cogni.semanticz</groupId>
-    <artifactId>elastic-indexer</artifactId>
+    <artifactId>semanticz-elastic-indexer</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
@@ -38,7 +38,7 @@ To build the project from source:
 1. Clone the repository:
    ```bash
    git clone https://github.com/cognizone/semanticz-elastic-indexer.git
-   cd elastic-indexer
+   cd semanticz-elastic-indexer
    ```
 
 2. Build with Gradle:
@@ -50,13 +50,13 @@ The build artifacts will be stored in the `build/libs` directory.
 
 ## Usage
 
-To index RDF data into Elasticsearch using the `rdf2jsonld` and `elastic-indexer` libraries, add the following dependencies to your project:
+To index RDF data into Elasticsearch using the `semanticz-rdf2jsonld` and `semanticz-elastic-indexer` libraries, add the following dependencies to your project:
 
 ### Gradle
 
 ```gradle
-implementation "zone.cogni.semanticz:rdf2jsonld:{rdf2jsonld.version}"
-implementation "zone.cogni.semanticz:elastic-indexer:{rdf2jsonld.version}"
+implementation "zone.cogni.semanticz:semanticz-rdf2jsonld:{rdf2jsonld.version}"
+implementation "zone.cogni.semanticz:semanticz-elastic-indexer:{rdf2jsonld.version}"
 ```
 
 ### Maven
@@ -64,13 +64,13 @@ implementation "zone.cogni.semanticz:elastic-indexer:{rdf2jsonld.version}"
 ```xml
 <dependency>
   <groupId>zone.cogni.semanticz</groupId>
-  <artifactId>rdf2jsonld</artifactId>
-  <version>{rdf2jsonld.version}</version>
+  <artifactId>semanticz-rdf2jsonld</artifactId>
+  <version>{semanticz-rdf2jsonld.version}</version>
 </dependency>
 <dependency>
   <groupId>zone.cogni.semanticz</groupId>
-  <artifactId>elastic-indexer</artifactId>
-  <version>{rdf2jsonld.version}</version>
+  <artifactId>semanticz-elastic-indexer</artifactId>
+  <version>{semanticz-elastic-indexer.version}</version>
 </dependency>
 ```
 

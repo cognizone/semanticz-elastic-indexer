@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
-
 public class ElasticsearchClientUtils {
 
     public static void clearIndex(@Nonnull ElasticsearchClient elasticClient,
