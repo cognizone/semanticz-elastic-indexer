@@ -79,9 +79,9 @@ implementation "zone.cogni.semanticz:semanticz-elastic-indexer:{rdf2jsonld.versi
 Here's how you can index a single RDF document into Elasticsearch using a SHACL model for transformation:
 
 ```java
-public void indexOne(String uri, Model data, Model shaclModel) {
+public void indexOne(String uri, Model data, Model shacl) {
     // Convert the RDF data to JSON-LD using the SHACL model
-    String jsonLd = JsonLdUtils.modelToJsonLd(data, shaclModel, jsonLdWriter);
+    String jsonLd = JsonLdUtils.modelToJsonLd(data, shacl);
 
     // Index the JSON-LD document into Elasticsearch
     IndexingUtils.simpleIndexOne(elasticsearchClient, "index-name", uri, jsonLd);
@@ -92,8 +92,7 @@ In this example:
 
 - `uri` is the unique identifier for the document.
 - `data` is the RDF `Model` containing your data.
-- `shaclModel` is the SHACL `Model` used to guide the transformation during the conversion to JSON-LD.
-- `jsonLdWriter` is an instance of `JsonLdWriter` configured according to your needs.
+- `shacl` is the SHACL `Model` used to guide the transformation during the conversion to JSON-LD.
 - `elasticsearchClient` is your Elasticsearch client instance.
 - `"index-name"` is the name of the Elasticsearch index where the document will be stored.
 - `JsonLdUtils.modelToJsonLd()` converts the RDF `Model` to a JSON-LD string using the SHACL model.

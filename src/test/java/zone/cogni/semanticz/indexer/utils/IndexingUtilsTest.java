@@ -5,12 +5,10 @@ import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
-import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,81 +40,6 @@ public class IndexingUtilsTest {
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> IndexingUtils.handleElasticBulkResponse(responses));
         assertEquals("Elastic response got errors. Check logs.", exception.getMessage());
-    }
-
-    @Test
-    public void testGetFailedBulkRequestsString() {
-        // Arrange
-        BulkResponseItem item1 = mock(BulkResponseItem.class);
-        when(item1.status()).thenReturn(201); // Success
-
-        BulkResponseItem item2 = mock(BulkResponseItem.class);
-        when(item2.status()).thenReturn(404); // Error
-        when(item2.toString()).thenReturn("Item2 Error");
-
-        BulkResponseItem item3 = mock(BulkResponseItem.class);
-        when(item3.status()).thenReturn(500); // Error
-        when(item3.toString()).thenReturn("Item3 Error");
-
-        BulkResponse bulkResponse = mock(BulkResponse.class);
-        when(bulkResponse.items()).thenReturn(Arrays.asList(item1, item2, item3));
-
-        // Act
-        String failedRequestsString = IndexingUtils.getFailedBulkRequestsString(bulkResponse);
-
-        // Assert
-        assertEquals("[Item2 Error, Item3 Error]", failedRequestsString);
-    }
-
-    @Test
-    public void testGetRequestCallable_success() throws Exception {
-        // Arrange
-        ElasticsearchClient elasticsearchClient = mock(ElasticsearchClient.class);
-        BulkRequest bulkRequest = mock(BulkRequest.class);
-        BulkResponse bulkResponse = mock(BulkResponse.class);
-
-        when(elasticsearchClient.bulk(bulkRequest)).thenReturn(bulkResponse);
-
-        // Act
-        Callable<BulkResponse> callable = IndexingUtils.getRequestCallable(elasticsearchClient, bulkRequest);
-        BulkResponse response = callable.call();
-
-        // Assert
-        verify(elasticsearchClient).bulk(bulkRequest);
-        assertEquals(bulkResponse, response);
-    }
-
-    @Test
-    public void testCallAndSaveException_success() {
-        // Arrange
-        Callable<String> callable = () -> "Success";
-        List<Throwable> exceptions = new ArrayList<>();
-
-        // Act
-        Optional<String> result = IndexingUtils.callAndSaveException(callable, exceptions);
-
-        // Assert
-        assertTrue(result.isPresent());
-        assertEquals("Success", result.get());
-        assertTrue(exceptions.isEmpty());
-    }
-
-    @Test
-    public void testCallAndSaveException_exception() {
-        // Arrange
-        Exception exceptionToThrow = new Exception("Test Exception");
-        Callable<String> callable = () -> {
-            throw exceptionToThrow;
-        };
-        List<Throwable> exceptions = new ArrayList<>();
-
-        // Act
-        Optional<String> result = IndexingUtils.callAndSaveException(callable, exceptions);
-
-        // Assert
-        assertFalse(result.isPresent());
-        assertEquals(1, exceptions.size());
-        assertEquals(exceptionToThrow, exceptions.get(0));
     }
 
     @Test

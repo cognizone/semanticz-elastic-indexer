@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
+
 public class ElasticsearchClientUtils {
 
     public static void clearIndex(@Nonnull ElasticsearchClient elasticClient,
@@ -40,8 +41,8 @@ public class ElasticsearchClientUtils {
                                    @Nonnull InputStream elasticSettingsStream) {
         try {
             CreateIndexResponse response = elasticClient.indices()
-                    .create(builder -> builder.index(index)
-                            .withJson(elasticSettingsStream));
+                                                        .create(builder -> builder.index(index)
+                                                                                  .withJson(elasticSettingsStream));
 
             if (!response.acknowledged()) {
                 throw new RuntimeException("Error while creating elastic index '" + index + "'.");
@@ -55,8 +56,8 @@ public class ElasticsearchClientUtils {
                                  @Nonnull String index) {
         try {
             return elasticClient.indices()
-                    .exists(builder -> builder.index(index))
-                    .value();
+                                .exists(builder -> builder.index(index))
+                                .value();
         } catch (ElasticsearchException | IOException e) {
             throw new RuntimeException("Error while checking for existence of index  '" + index + "'.", e);
         }
@@ -66,7 +67,7 @@ public class ElasticsearchClientUtils {
                                    @Nonnull String index) {
         try {
             DeleteIndexResponse response = elasticClient.indices()
-                    .delete(builder -> builder.index(index));
+                                                        .delete(builder -> builder.index(index));
 
             if (!response.acknowledged()) {
                 throw new RuntimeException("Error while deleting index  '" + index + "'.");
@@ -106,10 +107,10 @@ public class ElasticsearchClientUtils {
         if (!response.errors()) return;
 
         String errorMessage = response.items()
-                .stream()
-                .filter(item -> item.status() < 200 || item.status() >= 300)
-                .map(BulkResponseItem::toString)
-                .collect(Collectors.joining(", ", "[", "]"));
+                                      .stream()
+                                      .filter(item -> item.status() < 200 || item.status() >= 300)
+                                      .map(BulkResponseItem::toString)
+                                      .collect(Collectors.joining(", ", "[", "]"));
 
         throw new RuntimeException("Elastic delete bulk request returned errors: " + errorMessage);
     }
@@ -117,8 +118,8 @@ public class ElasticsearchClientUtils {
     public static void deleteDocument(ElasticsearchClient elasticClient, String indexName, String item) {
         try {
             elasticClient.delete(builder -> builder.index(indexName)
-                    .id(item)
-                    .refresh(Refresh.True));
+                                                   .id(item)
+                                                   .refresh(Refresh.True));
         } catch (IOException e) {
             throw new RuntimeException("Couldn't delete from " + indexName, e);
         }

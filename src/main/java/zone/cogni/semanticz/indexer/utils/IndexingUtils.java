@@ -25,41 +25,41 @@ public class IndexingUtils {
 
     public static void handleElasticBulkResponse(List<BulkResponse> elasticResponses) {
         List<BulkResponse> responsesWithError = elasticResponses.stream()
-                .filter(BulkResponse::errors)
-                .collect(Collectors.toList());
+                                                                .filter(BulkResponse::errors)
+                                                                .collect(Collectors.toList());
         if (!responsesWithError.isEmpty()) {
             String errorString = responsesWithError.stream()
-                    .map(IndexingUtils::getFailedBulkRequestsString)
-                    .collect(Collectors.joining("\n", "[", "]"));
+                                                   .map(IndexingUtils::getFailedBulkRequestsString)
+                                                   .collect(Collectors.joining("\n", "[", "]"));
             log.error("Elastic bulk response contained errors.\n\t " + errorString);
             throw new RuntimeException("Elastic response got errors. Check logs.");
         }
     }
 
-    public static String getFailedBulkRequestsString(BulkResponse response) {
+    private static String getFailedBulkRequestsString(BulkResponse response) {
         return response.items()
-                .stream()
-                .filter(item -> item.status() < 200 || item.status() >= 300)
-                .map(BulkResponseItem::toString)
-                .collect(Collectors.joining(", ", "[", "]"));
+                       .stream()
+                       .filter(item -> item.status() < 200 || item.status() >= 300)
+                       .map(BulkResponseItem::toString)
+                       .collect(Collectors.joining(", ", "[", "]"));
     }
 
-    public static Callable<BulkResponse> getRequestCallable(ElasticsearchClient elasticsearchClient, BulkRequest request) {
+    private static Callable<BulkResponse> getRequestCallable(ElasticsearchClient elasticsearchClient, BulkRequest request) {
         return () -> {
             try {
                 return elasticsearchClient.bulk(request);
             } catch (IOException e) {
                 String documentIds = request.operations()
-                        .stream()
-                        .map(bulkOperation -> bulkOperation.index().id())
-                        .collect(Collectors.joining(",\n", "[", "]"));
+                                            .stream()
+                                            .map(bulkOperation -> bulkOperation.index().id())
+                                            .collect(Collectors.joining(",\n", "[", "]"));
 
                 throw new RuntimeException("Something went wrong while sending bulk request with ids " + documentIds, e);
             }
         };
     }
 
-    public static <T> Optional<T> callAndSaveException(Callable<T> callable, List<Throwable> exceptions) {
+    private static <T> Optional<T> callAndSaveException(Callable<T> callable, List<Throwable> exceptions) {
         try {
             return Optional.of(callable.call());
         } catch (Exception e) {
@@ -70,14 +70,14 @@ public class IndexingUtils {
 
     public static BulkOperation parseIndexRequest(String index, String id, JsonNode document) {
         return BulkOperation.of(builder -> builder.index(idx -> idx.index(index)
-                .id(id)
-                .document(document)));
+                                                                   .id(id)
+                                                                   .document(document)));
     }
 
     public static BulkRequest createBulkRequest(List<BulkOperation> operations, boolean forceRefresh) {
         Refresh refreshParam = forceRefresh ? Refresh.True : Refresh.False;
         return BulkRequest.of(builder -> builder.operations(operations)
-                .refresh(refreshParam));
+                                                .refresh(refreshParam));
     }
 
     public static void simpleIndexAll(ElasticsearchClient elasticClient, String indexName, List<String> uris, Function<String, ObjectNode> documentProvider) {
