@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    java
     id("org.owasp.dependencycheck") version "10.0.3"
     id("maven-publish")
     id("signing")
@@ -13,17 +13,13 @@ scmVersion {
     tag.apply {
         prefix = "v"
         versionSeparator = ""
-        branchPrefix = mapOf(
-                "release/.*" to "release-v",
-                "hotfix/.*" to "hotfix-v"
-        )
+        branchPrefix.set("release/.*", "release-v")
+        branchPrefix.set("hotfix/.*", "hotfix-v")
     }
-
     nextVersion.apply {
         suffix = "SNAPSHOT"
         separator = "-"
     }
-
     versionIncrementer("incrementPatch") // Increment the patch version
 }
 
@@ -60,6 +56,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 
+// Publishing configuration including Cognizone Nexus and Maven Central
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -71,8 +68,8 @@ publishing {
                 url.set("https://github.com/cognizone/elastic-indexer")
 
                 scm {
-                    connection.set("scm:git@github.com:cognizone/elastic-indexer.git")
-                    developerConnection.set("scm:git@github.com:cognizone/semanticz-elastic-indexer.git")
+                    connection.set("scm:git@github.com/cognizone/elastic-indexer.git")
+                    developerConnection.set("scm:git@github.com/cognizone/semanticz-elastic-indexer.git")
                     url.set("https://github.com/cognizone/semanticz-elastic-indexer.git")
                 }
 
@@ -93,6 +90,42 @@ publishing {
             }
         }
     }
+
+    repositories {
+        // Cognizone Nexus repository
+        if (project.hasProperty("publishToCognizoneNexus")) {
+            maven {
+                credentials {
+                    username = System.getProperty("nexus.username")
+                    password = System.getProperty("nexus.password")
+                }
+                val releasesRepoUrl = "${System.getProperty("nexus.url")}/repository/cognizone-release"
+                val snapshotsRepoUrl = "${System.getProperty("nexus.url")}/repository/cognizone-snapshot"
+                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                isAllowInsecureProtocol = true
+            }
+        }
+
+        // Maven Central repository
+        if (project.hasProperty("publishToMavenCentral")) {
+            maven {
+                credentials {
+                    username = System.getProperty("ossrh.username")
+                    password = System.getProperty("ossrh.password")
+                }
+                val stagingRepoUrl = "${System.getProperty("ossrh.url")}/service/local/staging/deploy/maven2"
+                val snapshotsRepoUrl = "${System.getProperty("ossrh.url")}/content/repositories/snapshots"
+                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else stagingRepoUrl)
+            }
+        }
+    }
+}
+
+// Signing configuration (for Maven Central/Nexus if required)
+signing {
+    if (project.hasProperty("publishToMavenCentral") || project.hasProperty("publishToCognizoneNexus")) {
+        sign(publishing.publications["mavenJava"])
+    }
 }
 
 tasks.register("qualityCheck") {
@@ -105,6 +138,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
+// Include LICENSE file in META-INF folder of the jar
 tasks.jar {
     from(projectDir) {
         include("LICENSE")
