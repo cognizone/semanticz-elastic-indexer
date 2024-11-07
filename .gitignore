@@ -1,3 +1,6 @@
 /.gradle
 /.idea
 /build
+/semanticz-elastic-indexer/build
+/semanticz-elastic-indexer-orchestrator/build
+/semanticz-webflux-tools/build
