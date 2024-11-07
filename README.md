@@ -1,6 +1,6 @@
-# Elastic Indexer
+# SemantiCZ Elastic Indexer
 
-The 'elastic-indexer' is a Java-based tool that helps in indexing and searching documents in an Elasticsearch cluster using simple and bulk methods.
+The 'semanticz-elastic-indexer' is a Java-based tool that helps in indexing and searching documents in an Elasticsearch cluster using simple and bulk methods.
 
 ## Prerequisites
 
@@ -11,13 +11,13 @@ The 'elastic-indexer' is a Java-based tool that helps in indexing and searching 
 
 ### From Maven Central
 
-To include `elastic-indexer` in your project, add the following dependency:
+To include `semanticz-elastic-indexer` in your project, add the following dependency:
 
 #### For Gradle users:
 
 ```gradle
 dependencies {
-    implementation 'zone.cogni.semanticz:elastic-indexer:1.0.0'
+    implementation 'zone.cogni.semanticz:semanticz-elastic-indexer:1.0.0'
 }
 ```
 
@@ -26,7 +26,7 @@ dependencies {
 ```xml
 <dependency>
     <groupId>zone.cogni.semanticz</groupId>
-    <artifactId>elastic-indexer</artifactId>
+    <artifactId>semanticz-elastic-indexer</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
@@ -38,7 +38,7 @@ To build the project from source:
 1. Clone the repository:
    ```bash
    git clone https://github.com/cognizone/semanticz-elastic-indexer.git
-   cd elastic-indexer
+   cd semanticz-elastic-indexer
    ```
 
 2. Build with Gradle:
@@ -50,11 +50,53 @@ The build artifacts will be stored in the `build/libs` directory.
 
 ## Usage
 
-Here’s how you can use the library to convert RDF data using SHACL:
+To index RDF data into Elasticsearch using the `semanticz-rdf2jsonld` and `semanticz-elastic-indexer` libraries, add the following dependencies to your project:
+
+### Gradle
+
+```gradle
+implementation "zone.cogni.semanticz:semanticz-rdf2jsonld:{rdf2jsonld.version}"
+implementation "zone.cogni.semanticz:semanticz-elastic-indexer:{rdf2jsonld.version}"
+```
+
+### Maven
+
+```xml
+<dependency>
+  <groupId>zone.cogni.semanticz</groupId>
+  <artifactId>semanticz-rdf2jsonld</artifactId>
+  <version>{semanticz-rdf2jsonld.version}</version>
+</dependency>
+<dependency>
+  <groupId>zone.cogni.semanticz</groupId>
+  <artifactId>semanticz-elastic-indexer</artifactId>
+  <version>{semanticz-elastic-indexer.version}</version>
+</dependency>
+```
+
+### Indexing a Document Using a SHACL Model
+
+Here's how you can index a single RDF document into Elasticsearch using a SHACL model for transformation:
 
 ```java
+public void indexOne(String uri, Model data, Model shacl) {
+    // Convert the RDF data to JSON-LD using the SHACL model
+    String jsonLd = JsonLdUtils.modelToJsonLd(data, shacl);
 
+    // Index the JSON-LD document into Elasticsearch
+    IndexingUtils.simpleIndexOne(elasticsearchClient, "index-name", uri, jsonLd);
+}
 ```
+
+In this example:
+
+- `uri` is the unique identifier for the document.
+- `data` is the RDF `Model` containing your data.
+- `shacl` is the SHACL `Model` used to guide the transformation during the conversion to JSON-LD.
+- `elasticsearchClient` is your Elasticsearch client instance.
+- `"index-name"` is the name of the Elasticsearch index where the document will be stored.
+- `JsonLdUtils.modelToJsonLd()` converts the RDF `Model` to a JSON-LD string using the SHACL model.
+- `IndexingUtils.simpleIndexOne()` indexes the JSON-LD document into Elasticsearch.
 
 ## Running Tests
 
