@@ -193,8 +193,7 @@ public class IndexOrchestrator {
             List<String> uris = rdfStoreService.executeSelectQuery(selectSparql,
                                                        ResultSetMapper::resultSetToResultSetDto)
                                                .collectPropertyValues(i.getSelectQueryParam())
-                                               .stream().collect(Collectors.toSet()) // Distinct URIs
-                                               .stream().collect(Collectors.toList());
+                                               .stream().distinct().collect(Collectors.toList());
             IndexingUtils.simpleIndexAll(elasticsearchClient,
                     i.getIndex(),
                     uris,
