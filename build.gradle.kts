@@ -110,7 +110,7 @@ subprojects {
                         developer {
                             id.set("cognizone")
                             name.set("Cognizone")
-                            email.set("dev@cognizone.com")
+                            email.set("semanticz@cogni.zone")
                         }
                     }
                 }
