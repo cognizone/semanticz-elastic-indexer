@@ -1,9 +1,24 @@
+// Root build.gradle.kts
+
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.plugins.signing.SigningExtension
+import org.gradle.jvm.tasks.Jar
+
 plugins {
-    java
-    id("org.owasp.dependencycheck") version "10.0.3"
-    id("maven-publish")
-    id("signing")
     id("pl.allegro.tech.build.axion-release") version "1.13.3"
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // Add the dependency-check plugin to the classpath
+        classpath("org.owasp:dependency-check-gradle:8.4.0") // Use the latest version
+    }
 }
 
 group = "zone.cogni.semanticz"
@@ -13,8 +28,8 @@ scmVersion {
     tag.apply {
         prefix = "v"
         versionSeparator = ""
-        branchPrefix.set("release/.*", "release-v")
-        branchPrefix.set("hotfix/.*", "hotfix-v")
+        branchPrefix["release/.*"] = "release-v"
+        branchPrefix["hotfix/.*"] = "hotfix-v"
     }
     nextVersion.apply {
         suffix = "SNAPSHOT"
@@ -23,125 +38,128 @@ scmVersion {
     versionIncrementer("incrementPatch") // Increment the patch version
 }
 
-// Set the project version from scmVersion
-version = scmVersion.version
+// Set the version based on the presence of a command-line parameter otherwise set the project version from scmVersion
+version = findProperty("publishVersion") as String? ?: scmVersion.version
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-    withJavadocJar()
-    withSourcesJar()
-}
-
-dependencies {
-    implementation("jakarta.json:jakarta.json-api:2.0.1")
-    implementation("co.elastic.clients:elasticsearch-java:7.17.24")
-
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.3")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.15.3")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.3")
-    implementation("org.slf4j:jcl-over-slf4j:1.7.36")
-
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-    testImplementation("org.mockito:mockito-core:4.11.0")
-    testImplementation("org.mockito:mockito-inline:4.11.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
-}
-
-// Publishing configuration including Cognizone Nexus and Maven Central
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-
-            pom {
-                name.set("semanticz-elastic-indexer")
-                description.set("The Elastic Indexer is a Java-based tool that helps in indexing and searching documents in an Elasticsearch cluster using simple and bulk methods.")
-                url.set("https://github.com/cognizone/elastic-indexer")
-
-                scm {
-                    connection.set("scm:git@github.com/cognizone/elastic-indexer.git")
-                    developerConnection.set("scm:git@github.com/cognizone/semanticz-elastic-indexer.git")
-                    url.set("https://github.com/cognizone/semanticz-elastic-indexer.git")
-                }
-
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("cognizone")
-                        name.set("Cognizone")
-                        email.set("dev@cognizone.com")
-                    }
-                }
-            }
-        }
-    }
-
+allprojects {
     repositories {
-        // Cognizone Nexus repository
-        if (project.hasProperty("publishToCognizoneNexus")) {
-            maven {
-                credentials {
-                    username = System.getProperty("nexus.username")
-                    password = System.getProperty("nexus.password")
-                }
-                val releasesRepoUrl = "${System.getProperty("nexus.url")}/repository/cognizone-release"
-                val snapshotsRepoUrl = "${System.getProperty("nexus.url")}/repository/cognizone-snapshot"
-                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                isAllowInsecureProtocol = true
-            }
-        }
-
-        // Maven Central repository
-        if (project.hasProperty("publishToMavenCentral")) {
-            maven {
-                credentials {
-                    username = System.getProperty("ossrh.username")
-                    password = System.getProperty("ossrh.password")
-                }
-                val stagingRepoUrl = "${System.getProperty("ossrh.url")}/service/local/staging/deploy/maven2"
-                val snapshotsRepoUrl = "${System.getProperty("ossrh.url")}/content/repositories/snapshots"
-                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else stagingRepoUrl)
-            }
-        }
+        mavenLocal()
+        mavenCentral()
     }
 }
 
-// Signing configuration (for Maven Central/Nexus if required)
-signing {
-    if (project.hasProperty("publishToMavenCentral") || project.hasProperty("publishToCognizoneNexus")) {
-        sign(publishing.publications["mavenJava"])
+subprojects {
+    // Apply plugins
+    apply(plugin = "java")
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
+    apply(plugin = "org.owasp.dependencycheck")
+
+    group = "zone.cogni.semanticz"
+    version = rootProject.version
+
+    tasks.withType<JavaCompile> {
+        options.release.set(11)
     }
-}
 
-tasks.register("qualityCheck") {
-    dependsOn(tasks.named("pmdMain"))
-    dependsOn(tasks.named("pmdTest"))
-    dependsOn(tasks.named("dependencyCheckAnalyze"))
-}
+    // Configure the Java plugin
+    extensions.configure<JavaPluginExtension> {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+        withJavadocJar()
+        withSourcesJar()
+    }
 
-tasks.test {
-    useJUnitPlatform()
-}
+    // Include LICENSE file in META-INF folder of the jar
+    tasks.withType<Jar> {
+        from(rootProject.projectDir) {
+            include("LICENSE")
+            into("META-INF")
+        }
+    }
 
-// Include LICENSE file in META-INF folder of the jar
-tasks.jar {
-    from(projectDir) {
-        include("LICENSE")
-        into("META-INF")
+    // Configure the test task
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
+    // Publishing configuration
+    extensions.configure<PublishingExtension> {
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(components["java"])
+
+                pom {
+                    name.set(project.name)
+                    description.set("Description for ${project.name}")
+                    url.set("https://github.com/cognizone/elastic-indexer")
+
+                    scm {
+                        connection.set("scm:git@github.com/cognizone/elastic-indexer.git")
+                        developerConnection.set("scm:git@github.com/cognizone/elastic-indexer.git")
+                        url.set("https://github.com/cognizone/elastic-indexer.git")
+                    }
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set("cognizone")
+                            name.set("Cognizone")
+                            email.set("semanticz@cogni.zone")
+                        }
+                    }
+                }
+            }
+        }
+
+        repositories {
+            // Cognizone Nexus repository
+            if (project.hasProperty("publishToCognizoneNexus")) {
+                maven {
+                    credentials {
+                        username = System.getProperty("nexus.username")
+                        password = System.getProperty("nexus.password")
+                    }
+                    val releasesRepoUrl = "${System.getProperty("nexus.url")}/repository/cognizone-release"
+                    val snapshotsRepoUrl = "${System.getProperty("nexus.url")}/repository/cognizone-snapshot"
+                    url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                    isAllowInsecureProtocol = true
+                }
+            }
+
+            // Maven Central repository
+            if (project.hasProperty("publishToMavenCentral")) {
+                maven {
+                    credentials {
+                        username = System.getProperty("ossrh.username")
+                        password = System.getProperty("ossrh.password")
+                    }
+                    val stagingRepoUrl = "${System.getProperty("ossrh.url")}/service/local/staging/deploy/maven2"
+                    val snapshotsRepoUrl = "${System.getProperty("ossrh.url")}/content/repositories/snapshots"
+                    url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else stagingRepoUrl)
+                }
+            }
+        }
+    }
+
+    // Signing configuration
+    extensions.configure<SigningExtension> {
+        if (project.hasProperty("publishToMavenCentral") || project.hasProperty("publishToCognizoneNexus")) {
+            useInMemoryPgpKeys(
+                    System.getenv("SIGNING_KEY"),
+                    System.getenv("SIGNING_PASSWORD")
+            )
+            sign(extensions.getByType<PublishingExtension>().publications["mavenJava"])
+        }
+    }
+
+    // Quality check tasks
+    tasks.register("qualityCheck") {
+        dependsOn("pmdMain", "pmdTest", "dependencyCheckAnalyze")
     }
 }
