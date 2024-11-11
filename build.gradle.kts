@@ -150,10 +150,7 @@ subprojects {
     // Signing configuration
     extensions.configure<SigningExtension> {
         if (project.hasProperty("publishToMavenCentral") || project.hasProperty("publishToCognizoneNexus")) {
-            useInMemoryPgpKeys(
-                    System.getenv("SIGNING_KEY"),
-                    System.getenv("SIGNING_PASSWORD")
-            )
+            
             sign(extensions.getByType<PublishingExtension>().publications["mavenJava"])
         }
     }
