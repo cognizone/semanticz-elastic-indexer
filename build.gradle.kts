@@ -8,7 +8,7 @@ import org.gradle.plugins.signing.SigningExtension
 import org.gradle.jvm.tasks.Jar
 
 plugins {
-    id("pl.allegro.tech.build.axion-release") version "1.13.3"
+    id("pl.allegro.tech.build.axion-release") version "1.13.7"
 }
 
 buildscript {
