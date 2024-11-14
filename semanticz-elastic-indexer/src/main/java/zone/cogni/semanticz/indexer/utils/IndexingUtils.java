@@ -68,7 +68,7 @@ public class IndexingUtils {
         }
     }
 
-    public static BulkOperation parseIndexRequest(String index, String id, JsonNode document) {
+    public static <T> BulkOperation parseIndexRequest(String index, String id, T document) {
         return BulkOperation.of(builder -> builder.index(idx -> idx.index(index)
                                                                    .id(id)
                                                                    .document(document)));
@@ -80,7 +80,7 @@ public class IndexingUtils {
                                                 .refresh(refreshParam));
     }
 
-    public static void simpleIndexAll(ElasticsearchClient elasticClient, String indexName, List<String> uris, Function<String, ObjectNode> documentProvider) {
+    public static <T> void simpleIndexAll(ElasticsearchClient elasticClient, String indexName, List<String> uris, Function<String, T> documentProvider) {
         List<Throwable> exceptions = new ArrayList<>();
         List<BulkResponse> elasticResponses = new ArrayList<>();
         for (String uri : uris) {
@@ -92,7 +92,7 @@ public class IndexingUtils {
         IndexingUtils.handleElasticBulkResponse(elasticResponses);
     }
 
-    public static void simpleIndexOne(ElasticsearchClient elasticClient, String indexName, String uri, ObjectNode document) {
+    public static <T> void simpleIndexOne(ElasticsearchClient elasticClient, String indexName, String uri, T document) {
         List<Throwable> exceptions = new ArrayList<>();
         Optional<BulkResponse> responseOptional = simpleIndexOne(elasticClient, indexName, uri, document, exceptions);
         if (responseOptional.isPresent()) {
@@ -100,7 +100,7 @@ public class IndexingUtils {
         }
     }
 
-    public static Optional<BulkResponse> simpleIndexOne(ElasticsearchClient elasticClient, String indexName, String uri, ObjectNode document, List<Throwable> exceptions) {
+    public static <T> Optional<BulkResponse> simpleIndexOne(ElasticsearchClient elasticClient, String indexName, String uri, T document, List<Throwable> exceptions) {
         BulkOperation op = IndexingUtils.parseIndexRequest(indexName, uri, document);
         BulkRequest request = IndexingUtils.createBulkRequest(List.of(op), true);
         Callable<BulkResponse> callableRequest = IndexingUtils.getRequestCallable(elasticClient, request);
