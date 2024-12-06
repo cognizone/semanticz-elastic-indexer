@@ -1,111 +1,82 @@
 # SemantiCZ Elastic Indexer
 
-The 'semanticz-elastic-indexer' is a Java-based tool that helps in indexing and searching documents in an Elasticsearch cluster using simple and bulk methods.
+## Overview
 
-## Prerequisites
+SemantiCZ Elastic Indexer is a suite of Java-based tools designed to facilitate the indexing and searching of RDF (Resource Description Framework) data within Elasticsearch. 
 
-- Java 11 or higher
-- Gradle 8.5 or higher for building the project
+- **[semanticz-elastic-indexer](./semanticz-elastic-indexer/README.md)**
+- **[semanticz-elastic-indexer-orchestrator](./semanticz-elastic-indexer-orchestrator/README.md)**
+- **[semanticz-webflux-tools](./semanticz-webflux-tools/README.md)**
 
-## Installation
+---
 
-### From Maven Central
+## Subprojects
 
-To include `semanticz-elastic-indexer` in your project, add the following dependency:
+### 1. semanticz-elastic-indexer
 
-#### For Gradle users:
+**Description**: This core library simplifies the process of indexing and searching documents in Elasticsearch. It allows for the conversion of RDF data into JSON-LD using SHACL (Shapes Constraint Language) shapes and provides utilities for both simple and bulk indexing methods.
 
-```gradle
-dependencies {
-    implementation 'zone.cogni.semanticz:semanticz-elastic-indexer:1.0.0'
-}
-```
+**Key Features**:
 
-#### For Maven users:
+- **RDF to JSON-LD Conversion**: Transforms RDF models into JSON-LD format using SHACL models, enabling seamless integration with Elasticsearch.
+- **Indexing Utilities**: Offers straightforward methods for indexing documents into Elasticsearch clusters, supporting both individual and bulk operations.
+- **Integration with Other Libraries**: Works in conjunction with `semanticz-rdf2jsonld` to enhance data transformation capabilities.
 
-```xml
-<dependency>
-    <groupId>zone.cogni.semanticz</groupId>
-    <artifactId>semanticz-elastic-indexer</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
+---
 
-### Building From Source
+### 2. semanticz-elastic-indexer-orchestrator
+
+**Description**: A configurable indexing service that orchestrates the indexing of entities from an RDF store into Elasticsearch. It supports both SPARQL and Elasticsearch facets, providing flexibility in defining how each entity type is selected and indexed.
+
+**Key Features**:
+
+- **Per-Entity Configuration**: Allows distinct configurations for different entity types, specifying selection criteria and indexing strategies.
+- **Facet Support**: Enables the use of SPARQL queries and Elasticsearch queries to compute facets, enhancing search and aggregation functionalities.
+- **Template-Based Configuration**: Utilizes Thymeleaf templates for dynamic query generation and string evaluation, offering flexibility and reusability in configurations.
+- **SHACL-Based Shaping**: Employs SHACL shapes to define how RDF data is transformed into JSON-LD, ensuring data consistency and integrity.
+
+---
+
+### 3. semanticz-webflux-tools
+
+**Description**: A utility library providing tools for working with proxy calls using Spring WebFlux and processing templates with Thymeleaf.
+
+**Key Features**:
+
+- **Proxy Endpoint Simplification**: Simplifies the creation and management of proxy endpoints within WebFlux applications.
+- **Template Processing**: Facilitates the use of Thymeleaf for processing templates.
+- **Utility Methods**: Provides helpful methods for resource loading and processing.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Java**: Version 11 or higher.
+- **Gradle**: Version 8.5 or higher (if building from source).
+- **Elasticsearch Cluster**: Required for indexing and searching operations.
+- **RDF Store**: Necessary for data sourcing, especially when using the Index Orchestrator.
+
+### Installation
+
+The libraries are available on Maven Central and can be included in your project by adding the appropriate dependencies to your build configuration. Ensure that you include only the modules relevant to your project's needs.
+
+### Building from Source
 
 To build the project from source:
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/cognizone/semanticz-elastic-indexer.git
-   cd semanticz-elastic-indexer
-   ```
+1. **Clone the Repository**: Obtain the source code by cloning the repository to your local machine.
 
-2. Build with Gradle:
-   ```bash
-   gradle clean build
-   ```
+2. **Navigate to the Project Directory**: Change your working directory to the cloned repository.
 
-The build artifacts will be stored in the `build/libs` directory.
+3. **Build with Gradle**: Use Gradle to build the project. The build artifacts for each subproject will be located in their respective `build/libs` directories after a successful build.
 
-## Usage
-
-To index RDF data into Elasticsearch using the `semanticz-rdf2jsonld` and `semanticz-elastic-indexer` libraries, add the following dependencies to your project:
-
-### Gradle
-
-```gradle
-implementation "zone.cogni.semanticz:semanticz-rdf2jsonld:{rdf2jsonld.version}"
-implementation "zone.cogni.semanticz:semanticz-elastic-indexer:{rdf2jsonld.version}"
-```
-
-### Maven
-
-```xml
-<dependency>
-  <groupId>zone.cogni.semanticz</groupId>
-  <artifactId>semanticz-rdf2jsonld</artifactId>
-  <version>{semanticz-rdf2jsonld.version}</version>
-</dependency>
-<dependency>
-  <groupId>zone.cogni.semanticz</groupId>
-  <artifactId>semanticz-elastic-indexer</artifactId>
-  <version>{semanticz-elastic-indexer.version}</version>
-</dependency>
-```
-
-### Indexing a Document Using a SHACL Model
-
-Here's how you can index a single RDF document into Elasticsearch using a SHACL model for transformation:
-
-```java
-public void indexOne(String uri, Model data, Model shacl) {
-    // Convert the RDF data to JSON-LD using the SHACL model
-    String jsonLd = JsonLdUtils.modelToJsonLd(data, shacl);
-
-    // Index the JSON-LD document into Elasticsearch
-    IndexingUtils.simpleIndexOne(elasticsearchClient, "index-name", uri, jsonLd);
-}
-```
-
-In this example:
-
-- `uri` is the unique identifier for the document.
-- `data` is the RDF `Model` containing your data.
-- `shacl` is the SHACL `Model` used to guide the transformation during the conversion to JSON-LD.
-- `elasticsearchClient` is your Elasticsearch client instance.
-- `"index-name"` is the name of the Elasticsearch index where the document will be stored.
-- `JsonLdUtils.modelToJsonLd()` converts the RDF `Model` to a JSON-LD string using the SHACL model.
-- `IndexingUtils.simpleIndexOne()` indexes the JSON-LD document into Elasticsearch.
-
-## Running Tests
-
-Run unit tests using Gradle:
-
-```bash
-gradle test
-```
+---
 
 ## License
 
-This project is licensed under the Apache-2.0 license - see the `LICENSE` file for details.
+This project is licensed under the Apache-2.0 License. You may obtain a copy of the License at:
+
+- **[LICENSE](./LICENSE)**
+
