@@ -36,7 +36,7 @@ public class IndexingUtils {
         }
     }
 
-    private static String getFailedBulkRequestsString(BulkResponse response) {
+    public static String getFailedBulkRequestsString(BulkResponse response) {
         return response.items()
                        .stream()
                        .filter(item -> item.status() < 200 || item.status() >= 300)
@@ -44,7 +44,7 @@ public class IndexingUtils {
                        .collect(Collectors.joining(", ", "[", "]"));
     }
 
-    private static Callable<BulkResponse> getRequestCallable(ElasticsearchClient elasticsearchClient, BulkRequest request) {
+    public static Callable<BulkResponse> getRequestCallable(ElasticsearchClient elasticsearchClient, BulkRequest request) {
         return () -> {
             try {
                 return elasticsearchClient.bulk(request);
@@ -59,7 +59,7 @@ public class IndexingUtils {
         };
     }
 
-    private static <T> Optional<T> callAndSaveException(Callable<T> callable, List<Throwable> exceptions) {
+    public static <T> Optional<T> callAndSaveException(Callable<T> callable, List<Throwable> exceptions) {
         try {
             return Optional.of(callable.call());
         } catch (Exception e) {

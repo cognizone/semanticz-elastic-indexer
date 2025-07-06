@@ -92,18 +92,18 @@ public class ElasticsearchClientUtils {
         }
     }
 
-    private static BulkRequest getDeleteItemsBulkRequest(@Nonnull String index,
+    public static BulkRequest getDeleteItemsBulkRequest(@Nonnull String index,
                                                          @Nonnull List<String> ids) {
         List<BulkOperation> bulkOperations = ids.stream().map(uri -> createDeleteBulkOperation(index, uri)).collect(Collectors.toList());
         return BulkRequest.of(b -> b.operations(bulkOperations).refresh(Refresh.True));
     }
 
-    private static BulkOperation createDeleteBulkOperation(String index, String uri) {
+    public static BulkOperation createDeleteBulkOperation(String index, String uri) {
         DeleteOperation deleteOperation = DeleteOperation.of(b -> b.index(index).id(uri));
         return BulkOperation.of(b -> b.delete(deleteOperation));
     }
 
-    private static void handleBulkResponse(BulkResponse response) {
+    public static void handleBulkResponse(BulkResponse response) {
         if (!response.errors()) return;
 
         String errorMessage = response.items()
