@@ -76,7 +76,6 @@ To build the project from source:
 
 ## License
 
-
 This project is licensed under the Apache-2.0 License. You may obtain a copy of the License at:
 
 - **[LICENSE](./LICENSE)**
