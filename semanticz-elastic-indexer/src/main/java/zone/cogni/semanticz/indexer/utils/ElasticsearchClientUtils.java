@@ -11,7 +11,7 @@ import co.elastic.clients.elasticsearch.core.bulk.DeleteOperation;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;

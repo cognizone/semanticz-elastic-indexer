@@ -276,7 +276,7 @@ public class IndexOrchestrator {
         String esPath = facet.getPath().replace("<DOCUMENT_ID>", URLEncoder.encode(uri, StandardCharsets.UTF_8));
         try {
             ResponseEntity<String> response = webProxy.proxyResponse(esPath, facet.getMethod(), facet.getAccept(), facet.getContentType(), facetQuery);
-            int statusCode = response.getStatusCodeValue();
+            int statusCode = response.getStatusCode().value();
 
             if (statusCode >= 200 && statusCode < 300) {
                 facets.set(facet.getName(), new ObjectMapper().readTree(response.getBody()));

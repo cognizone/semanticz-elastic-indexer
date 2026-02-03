@@ -8,16 +8,20 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 public class WebProxy {
@@ -58,10 +62,17 @@ public class WebProxy {
                     .addHandlerLast(new ReadTimeoutHandler(readTimeout, TimeUnit.MILLISECONDS)));
         }
 
+        ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(64 * 1024 * 1024)) // 64MB
+                .build();
+
         webClient = WebUtils
                 .createWebClient(true, username, password)
                 .mutate()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .exchangeStrategies(strategies)
                 .build();
 
         log.info(
@@ -100,11 +111,16 @@ public class WebProxy {
     }
 
     private Mono<ResponseEntity<String>> processResponse(ClientResponse response) {
-        return response.bodyToMono(String.class)
-                       .map(body -> ResponseEntity
-                               .status(response.rawStatusCode())
-                               .headers(response.headers().asHttpHeaders())
-                               .body(body));
+        // Read raw DataBuffers and manually join with a higher limit
+        return DataBufferUtils.join(response.bodyToFlux(DataBuffer.class), 64 * 1024 * 1024) // 64MB limit
+                .map(dataBuffer -> {
+                    String body = dataBuffer.toString(StandardCharsets.UTF_8);
+                    DataBufferUtils.release(dataBuffer); // important: free buffer
+                    return ResponseEntity
+                            .status(response.statusCode())
+                            .headers(response.headers().asHttpHeaders())
+                            .body(body);
+                });
     }
 
 }

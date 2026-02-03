@@ -1,4 +1,5 @@
 dependencies {
+    implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
     implementation("jakarta.json:jakarta.json-api:2.0.1")
     implementation("co.elastic.clients:elasticsearch-java:7.17.24")
 
